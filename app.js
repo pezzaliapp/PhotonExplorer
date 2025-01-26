@@ -7,10 +7,7 @@ let windDirection = 0;
 
 // Inizializza la mappa
 function initializeMap() {
-    map = L.map('map', {
-        crs: L.CRS.EPSG3857,
-        zoomControl: true,
-    }).setView([45.4642, 9.1900], 13); // Milano come posizione predefinita
+    map = L.map('map').setView([45.4642, 9.1900], 13); // Milano come posizione predefinita
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
@@ -19,6 +16,7 @@ function initializeMap() {
 
     map.on('click', function (e) {
         const { lat, lng } = e.latlng;
+
         const marker = L.marker([lat, lng]).addTo(map);
         waypointMarkers.push(marker);
         dronePath.push({ lat, lng });
@@ -27,9 +25,9 @@ function initializeMap() {
     });
 }
 
-// Calcola la distanza tra due punti
+// Calcola la distanza tra due punti (in metri)
 function calculateDistance(lat1, lng1, lat2, lng2) {
-    const R = 6371000;
+    const R = 6371000; // Raggio terrestre in metri
     const dLat = (lat2 - lat1) * (Math.PI / 180);
     const dLng = (lng2 - lng1) * (Math.PI / 180);
     const a =
@@ -39,9 +37,9 @@ function calculateDistance(lat1, lng1, lat2, lng2) {
     return R * c;
 }
 
-// Aggiorna i dati in tempo reale
+// Aggiorna i dati della tabella e in tempo reale
 function updateRealTimeData(index, distance) {
-    const currentSpeed = (10 + windSpeed).toFixed(2);
+    const currentSpeed = (10 + windSpeed).toFixed(2); // Velocità base + vento
     document.getElementById('realTimeData').textContent = `Velocità Attuale: ${currentSpeed} m/s | Distanza dal Prossimo Punto: ${distance.toFixed(2)} m`;
 
     const dataRows = document.getElementById('dataRows');
@@ -104,7 +102,7 @@ function simulateDroneFlight() {
     }, 100);
 }
 
-// Resetta la simulazione
+// Reset della simulazione
 function resetSimulation() {
     dronePath = [];
     waypointMarkers.forEach(marker => map.removeLayer(marker));
