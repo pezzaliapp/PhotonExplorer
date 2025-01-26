@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhotonExplorer</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="style.css">
+    <script defer src="app.js"></script>
+</head>
+<body>
+    <h1>PhotonExplorer: Scopri l'Invisibile con la Luce</h1>
+    <div class="mode-selection">
+        <button id="photonMode">Simulazione Fotoni</button>
+        <button id="droneMode">Pianificazione Drone</button>
+    </div>
+    <div id="simulationArea">
+        <canvas id="photonCanvas" width="600" height="400" style="display: none;"></canvas>
+        <canvas id="droneCanvas" width="600" height="400" style="display: none;"></canvas>
+    </div>
+    <div class="controls">
+        <button id="startButton" style="display: none;">Avvia Simulazione</button>
+        <button id="resetButton" style="display: none;">Reset</button>
+    </div>
+</body>
+</html>
