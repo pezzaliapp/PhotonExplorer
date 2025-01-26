@@ -6,24 +6,36 @@
     <title>PhotonExplorer</title>
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="style.css">
-    <script defer src="app.js"></script>
+    <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+    <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+    <!-- Il nostro script -->
+    <script defer src="app.js"></script>
 </head>
 <body>
     <h1>PhotonExplorer: Pianificazione del Volo del Drone</h1>
+    
+    <!-- Mappa -->
     <div id="map" style="width: 100vw; height: 70vh;"></div>
+
+    <!-- Controlli -->
     <div class="controls">
         <label for="windSpeed">Velocità del vento (nodi):</label>
         <input type="number" id="windSpeed" min="0" max="20" value="0" />
+        
         <label for="windDirection">Direzione del vento (gradi):</label>
         <input type="number" id="windDirection" min="0" max="360" value="0" />
+        
         <button id="startButton">Avvia Simulazione</button>
         <button id="resetButton">Reset</button>
         <button id="exportRoute">Esporta Rotta</button>
+        
         <label for="importFile">Importa Rotta:</label>
         <input type="file" id="importFile" accept=".json" />
     </div>
+
+    <!-- Tabella Dati -->
     <div id="dataTable">
         <h2>Dati della Simulazione</h2>
         <table>
