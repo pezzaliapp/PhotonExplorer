@@ -24,5 +24,21 @@
         <label for="importFile">Importa Rotta:</label>
         <input type="file" id="importFile" accept=".json" />
     </div>
+    <div id="dataTable">
+        <h2>Dati della Simulazione</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Punto</th>
+                    <th>Latitudine</th>
+                    <th>Longitudine</th>
+                    <th>Tempo Previsto (s)</th>
+                    <th>Distanza (m)</th>
+                </tr>
+            </thead>
+            <tbody id="dataRows"></tbody>
+        </table>
+        <p id="realTimeData">Velocità Attuale: 0 m/s | Distanza dal Prossimo Punto: 0 m</p>
+    </div>
 </body>
 </html>
