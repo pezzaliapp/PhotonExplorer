@@ -2,7 +2,6 @@ body {
     margin: 0;
     padding: 0;
     font-family: Arial, sans-serif;
-    height: 100vh;
     display: flex;
     flex-direction: column;
 }
@@ -18,28 +17,35 @@ h1 {
 #map {
     position: relative;
     margin: 0;
-    padding: 0;
     border: none;
 }
 
 .controls {
-    position: absolute;
-    top: 10px;
-    left: 10px;
     display: flex;
+    align-items: center;
     gap: 10px;
-    z-index: 1000;
+    padding: 10px;
 }
 
-button {
-    padding: 10px 20px;
-    background-color: #007BFF;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
+#dataTable {
+    padding: 20px;
 }
 
-button:hover {
-    background-color: #0056b3;
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+table, th, td {
+    border: 1px solid #ccc;
+}
+
+th, td {
+    padding: 10px;
+    text-align: center;
+}
+
+#realTimeData {
+    margin-top: 10px;
+    font-weight: bold;
 }
