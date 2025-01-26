@@ -2,81 +2,67 @@ let map;
 let droneMarker;
 let waypointMarkers = [];
 let dronePath = [];
-let speed = 10;
-let windSpeed = 2;
-let photons = [];
-let isPhotonSimulating = false;
+let isSimulating = false;
 
 // Inizializza la mappa
 function initializeMap() {
-    map = L.map('map').setView([45.4642, 9.1900], 13); // Milano come posizione predefinita
+    map = L.map('map', {
+        crs: L.CRS.EPSG3857,
+        zoomControl: true,
+    }).setView([45.4642, 9.1900], 13); // Milano come posizione predefinita
+
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
+        attribution: '&copy; OpenStreetMap contributors',
     }).addTo(map);
+
+    addGridToMap();
+    addClickEventForWaypoints();
 }
 
-// Simulazione dei Fotoni
-function initializePhotonSimulation() {
-    const canvas = document.createElement('canvas');
-    canvas.id = 'photonCanvas';
-    canvas.width = 800;
-    canvas.height = 500;
-    document.getElementById('simulationArea').appendChild(canvas);
-    const ctx = canvas.getContext('2d');
+// Aggiungi una griglia alla mappa
+function addGridToMap() {
+    const bounds = map.getBounds();
+    const step = 0.005; // Spaziatura della griglia
 
-    // Genera fotoni casuali
-    for (let i = 0; i < 100; i++) {
-        photons.push({
-            x: Math.random() * canvas.width,
-            y: Math.random() * canvas.height,
-            angle: Math.random() * 2 * Math.PI,
-            speed: 2 + Math.random() * 2,
-            color: `rgba(${Math.floor(200 + Math.random() * 55)}, 0, ${Math.floor(200 + Math.random() * 55)}, 0.7)`
-        });
+    for (let lat = bounds.getSouth(); lat < bounds.getNorth(); lat += step) {
+        L.polyline([[lat, bounds.getWest()], [lat, bounds.getEast()]], {
+            color: '#cccccc',
+            weight: 0.5,
+            opacity: 0.5,
+        }).addTo(map);
     }
 
-    function drawPhotons() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        photons.forEach(photon => {
-            // Aggiorna posizione
-            photon.x += photon.speed * Math.cos(photon.angle);
-            photon.y += photon.speed * Math.sin(photon.angle);
-
-            // Rimbalzo sui bordi
-            if (photon.x <= 0 || photon.x >= canvas.width) photon.angle = Math.PI - photon.angle;
-            if (photon.y <= 0 || photon.y >= canvas.height) photon.angle = -photon.angle;
-
-            // Disegna fotone
-            ctx.beginPath();
-            ctx.arc(photon.x, photon.y, 3, 0, Math.PI * 2);
-            ctx.fillStyle = photon.color;
-            ctx.fill();
-        });
-
-        if (isPhotonSimulating) {
-            requestAnimationFrame(drawPhotons);
-        }
+    for (let lng = bounds.getWest(); lng < bounds.getEast(); lng += step) {
+        L.polyline([[bounds.getSouth(), lng], [bounds.getNorth(), lng]], {
+            color: '#cccccc',
+            weight: 0.5,
+            opacity: 0.5,
+        }).addTo(map);
     }
-
-    isPhotonSimulating = true;
-    drawPhotons();
 }
 
-// Arresta la simulazione dei fotoni
-function stopPhotonSimulation() {
-    const canvas = document.getElementById('photonCanvas');
-    if (canvas) {
-        canvas.remove();
-    }
-    photons = [];
-    isPhotonSimulating = false;
+// Aggiungi un evento di clic per impostare i waypoint
+function addClickEventForWaypoints() {
+    map.on('click', function (e) {
+        const { lat, lng } = e.latlng;
+
+        // Aggiunge un marker al punto selezionato
+        const marker = L.marker([lat, lng]).addTo(map);
+        waypointMarkers.push(marker);
+
+        // Aggiunge il punto alla lista dei waypoint
+        dronePath.push({ lat, lng });
+
+        // Mostra le coordinate al clic
+        marker.bindPopup(`Latitudine: ${lat.toFixed(5)}, Longitudine: ${lng.toFixed(5)}`).openPopup();
+    });
 }
 
-// Simula il volo del drone (come prima)
+// Simula il volo del drone
 function simulateDroneFlight() {
     if (dronePath.length < 2) {
-        alert("Errore: Devi specificare almeno due waypoint per la simulazione.");
+        alert("Errore: Devi selezionare almeno due punti sulla mappa.");
         return;
     }
 
@@ -100,15 +86,12 @@ function simulateDroneFlight() {
         const dx = next.lat - current.lat;
         const dy = next.lng - current.lng;
         const distance = Math.sqrt(dx * dx + dy * dy);
-        const step = speed / 1000;
+        const step = 0.001; // Passo di movimento del drone
         const stepLat = step * dx / distance;
         const stepLng = step * dy / distance;
 
-        const windEffectLat = windSpeed / 10000 * (Math.random() - 0.5);
-        const windEffectLng = windSpeed / 10000 * (Math.random() - 0.5);
-
-        current.lat += stepLat + windEffectLat;
-        current.lng += stepLng + windEffectLng;
+        current.lat += stepLat;
+        current.lng += stepLng;
 
         droneMarker.setLatLng([current.lat, current.lng]);
 
@@ -118,46 +101,17 @@ function simulateDroneFlight() {
     }, 100);
 }
 
-// Eventi per i pulsanti
-document.getElementById('startButton').addEventListener('click', () => {
-    if (currentMode === 'photon') {
-        stopPhotonSimulation();
-        initializePhotonSimulation();
-    } else if (currentMode === 'drone') {
-        const waypoints = document.getElementById('waypoints').value.trim();
-        if (!waypoints) {
-            alert("Errore: Inserisci almeno due waypoint nel formato 'latitudine,longitudine,altitudine'.");
-            return;
-        }
-        speed = parseInt(document.getElementById('speed').value);
-        windSpeed = parseInt(document.getElementById('windSpeed').value);
-        addWaypoints(waypoints);
-        simulateDroneFlight();
-    }
-});
+// Reset della simulazione
+function resetSimulation() {
+    dronePath = [];
+    waypointMarkers.forEach(marker => map.removeLayer(marker));
+    waypointMarkers = [];
+    if (droneMarker) map.removeLayer(droneMarker);
+}
 
-document.getElementById('resetButton').addEventListener('click', () => {
-    if (currentMode === 'photon') {
-        stopPhotonSimulation();
-    } else if (currentMode === 'drone') {
-        dronePath = [];
-        waypointMarkers.forEach(marker => map.removeLayer(marker));
-        waypointMarkers = [];
-        if (droneMarker) map.removeLayer(droneMarker);
-    }
-});
+// Eventi
+document.getElementById('startButton').addEventListener('click', simulateDroneFlight);
+document.getElementById('resetButton').addEventListener('click', resetSimulation);
 
-document.getElementById('photonMode').addEventListener('click', () => {
-    currentMode = 'photon';
-    document.getElementById('map').style.display = 'none';
-    document.getElementById('controlPanel').style.display = 'block';
-    stopPhotonSimulation();
-    initializePhotonSimulation();
-});
-
-document.getElementById('droneMode').addEventListener('click', () => {
-    currentMode = 'drone';
-    initializeMap();
-    document.getElementById('map').style.display = 'block';
-    document.getElementById('controlPanel').style.display = 'block';
-});
+// Inizializza la mappa quando la pagina è pronta
+document.addEventListener('DOMContentLoaded', initializeMap);
