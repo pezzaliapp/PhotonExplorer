@@ -1,9 +1,50 @@
-// Aggiorna i dati della tabella e in tempo reale
+let map;
+let droneMarker;
+let waypointMarkers = [];
+let dronePath = [];
+let windSpeed = 0;
+let windDirection = 0;
+
+// Inizializza la mappa
+function initializeMap() {
+    map = L.map('map', {
+        crs: L.CRS.EPSG3857,
+        zoomControl: true,
+    }).setView([45.4642, 9.1900], 13); // Milano come posizione predefinita
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap contributors',
+    }).addTo(map);
+
+    map.on('click', function (e) {
+        const { lat, lng } = e.latlng;
+
+        const marker = L.marker([lat, lng]).addTo(map);
+        waypointMarkers.push(marker);
+        dronePath.push({ lat, lng });
+
+        marker.bindPopup(`Latitudine: ${lat.toFixed(5)}, Longitudine: ${lng.toFixed(5)}`).openPopup();
+    });
+}
+
+// Calcola la distanza tra due punti in metri
+function calculateDistance(lat1, lng1, lat2, lng2) {
+    const R = 6371000; // Raggio terrestre in metri
+    const dLat = (lat2 - lat1) * (Math.PI / 180);
+    const dLng = (lng2 - lng1) * (Math.PI / 180);
+    const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+}
+
+// Aggiorna la tabella e i dati in tempo reale
 function updateRealTimeData(index, distance) {
-    const currentSpeed = (10 + windSpeed).toFixed(2); // Velocità base + effetto vento
+    const currentSpeed = (10 + windSpeed).toFixed(2); // Velocità base + vento
     document.getElementById('realTimeData').textContent = `Velocità Attuale: ${currentSpeed} m/s | Distanza dal Prossimo Punto: ${distance.toFixed(2)} m`;
 
-    // Aggiungi riga alla tabella se non presente
     const dataRows = document.getElementById('dataRows');
     const rowExists = dataRows.querySelector(`tr[data-index="${index}"]`);
     if (!rowExists) {
@@ -26,12 +67,15 @@ function updateRealTimeData(index, distance) {
 // Simula il volo del drone
 function simulateDroneFlight() {
     if (dronePath.length < 2) {
-        alert("Errore: Devi selezionare almeno due punti sulla mappa.");
+        alert("Errore: Seleziona almeno due punti sulla mappa.");
         return;
     }
 
     let index = 0;
-    const droneIcon = L.icon({ iconUrl: 'icons/icon-drone.png', iconSize: [30, 30] });
+    const droneIcon = L.icon({
+        iconUrl: 'icons/icon-drone.png',
+        iconSize: [30, 30],
+    });
     droneMarker = L.marker([dronePath[0].lat, dronePath[0].lng], { icon: droneIcon }).addTo(map);
 
     const interval = setInterval(() => {
@@ -47,7 +91,7 @@ function simulateDroneFlight() {
         const dy = next.lng - current.lng;
         const distance = calculateDistance(current.lat, current.lng, next.lat, next.lng);
 
-        const stepLat = (dx / distance) * 0.0001; // Movimento incrementale
+        const stepLat = (dx / distance) * 0.0001;
         const stepLng = (dy / distance) * 0.0001;
 
         current.lat += stepLat;
@@ -61,17 +105,84 @@ function simulateDroneFlight() {
     }, 100);
 }
 
-// Funzione per calcolare la distanza tra due punti
-function calculateDistance(lat1, lng1, lat2, lng2) {
-    const R = 6371000; // Raggio terrestre in metri
-    const dLat = (lat2 - lat1) * (Math.PI / 180);
-    const dLng = (lng2 - lng1) * (Math.PI / 180);
-    const a =
-        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
+// Resetta la simulazione
+function resetSimulation() {
+    dronePath = [];
+    waypointMarkers.forEach(marker => map.removeLayer(marker));
+    waypointMarkers = [];
+    if (droneMarker) map.removeLayer(droneMarker);
+    document.getElementById('dataRows').innerHTML = '';
+    document.getElementById('realTimeData').textContent = '';
 }
 
-// Inizializza la mappa quando la pagina è pronta
+// Esporta la rotta in formato JSON
+function exportRoute() {
+    if (dronePath.length === 0) {
+        alert("Errore: Nessuna rotta da esportare.");
+        return;
+    }
+
+    const routeData = {
+        waypoints: dronePath,
+        windSpeed,
+        windDirection,
+    };
+
+    const blob = new Blob([JSON.stringify(routeData, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "drone_route.json";
+    link.click();
+
+    URL.revokeObjectURL(url);
+}
+
+// Importa una rotta da un file JSON
+function importRoute(event) {
+    const file = event.target.files[0];
+    if (!file) {
+        alert("Errore: Nessun file selezionato.");
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        try {
+            const data = JSON.parse(e.target.result);
+            resetSimulation();
+            data.waypoints.forEach(point => {
+                const marker = L.marker([point.lat, point.lng]).addTo(map);
+                waypointMarkers.push(marker);
+                dronePath.push(point);
+                marker.bindPopup(`Latitudine: ${point.lat.toFixed(5)}, Longitudine: ${point.lng.toFixed(5)}`).openPopup();
+            });
+
+            windSpeed = data.windSpeed || 0;
+            windDirection = data.windDirection || 0;
+
+            document.getElementById('windSpeed').value = windSpeed;
+            document.getElementById('windDirection').value = windDirection;
+
+            alert("Rotta importata con successo!");
+        } catch (error) {
+            alert("Errore: File JSON non valido.");
+        }
+    };
+
+    reader.readAsText(file);
+}
+
+// Eventi principali
+document.getElementById('startButton').addEventListener('click', () => {
+    windSpeed = parseFloat(document.getElementById('windSpeed').value);
+    windDirection = parseFloat(document.getElementById('windDirection').value);
+    simulateDroneFlight();
+});
+
+document.getElementById('resetButton').addEventListener('click', resetSimulation);
+document.getElementById('exportRoute').addEventListener('click', exportRoute);
+document.getElementById('importFile').addEventListener('change', importRoute);
+
 document.addEventListener('DOMContentLoaded', initializeMap);
