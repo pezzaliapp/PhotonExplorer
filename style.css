@@ -4,6 +4,7 @@ body {
     font-family: Arial, sans-serif;
     display: flex;
     flex-direction: column;
+    height: 100vh;
 }
 
 h1 {
@@ -16,24 +17,24 @@ h1 {
 
 #map {
     position: relative;
-    margin: 0;
+    flex-grow: 1;
     border: none;
 }
 
 .controls {
-    display: flex;
-    align-items: center;
-    gap: 10px;
     padding: 10px;
-}
-
-#dataTable {
-    padding: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    background-color: #f4f4f4;
+    border-top: 1px solid #ccc;
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
+    margin-top: 10px;
+    background-color: #fff;
 }
 
 table, th, td {
