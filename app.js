@@ -16,16 +16,14 @@ function initializeMap() {
 
     map.on('click', function (e) {
         const { lat, lng } = e.latlng;
-
         const marker = L.marker([lat, lng]).addTo(map);
         waypointMarkers.push(marker);
         dronePath.push({ lat, lng });
-
         marker.bindPopup(`Latitudine: ${lat.toFixed(5)}, Longitudine: ${lng.toFixed(5)}`).openPopup();
     });
 }
 
-// Calcola la distanza tra due punti in metri
+// Calcola distanza tra due punti (in metri)
 function calculateDistance(lat1, lng1, lat2, lng2) {
     const R = 6371000; // Raggio terrestre in metri
     const dLat = (lat2 - lat1) * (Math.PI / 180);
@@ -40,16 +38,32 @@ function calculateDistance(lat1, lng1, lat2, lng2) {
 // Simula il volo del drone
 function simulateDroneFlight() {
     if (dronePath.length < 2) {
-        alert("Errore: Devi selezionare almeno due punti.");
+        alert("Errore: Seleziona almeno due punti.");
         return;
     }
 
     let index = 0;
-    const droneIcon = L.icon({
-        iconUrl: 'icons/icon-drone.png',
-        iconSize: [30, 30],
-    });
+    const droneIcon = L.icon({ iconUrl: 'icons/icon-drone.png', iconSize: [30, 30] });
     droneMarker = L.marker([dronePath[0].lat, dronePath[0].lng], { icon: droneIcon }).addTo(map);
+
+    const dataRows = document.getElementById('dataRows');
+    dataRows.innerHTML = '';
+
+    dronePath.forEach((point, i) => {
+        if (i < dronePath.length - 1) {
+            const nextPoint = dronePath[i + 1];
+            const distance = calculateDistance(point.lat, point.lng, nextPoint.lat, nextPoint.lng);
+            const time = (distance / (10 + windSpeed)).toFixed(2); // Velocità media 10 m/s più effetto del vento
+            const row = `<tr>
+                <td>${i + 1}</td>
+                <td>${point.lat.toFixed(5)}</td>
+                <td>${point.lng.toFixed(5)}</td>
+                <td>${time}</td>
+                <td>${distance.toFixed(2)}</td>
+            </tr>`;
+            dataRows.insertAdjacentHTML('beforeend', row);
+        }
+    });
 
     const interval = setInterval(() => {
         if (index >= dronePath.length - 1) {
@@ -64,7 +78,7 @@ function simulateDroneFlight() {
         const dy = next.lng - current.lng;
         const distance = calculateDistance(current.lat, current.lng, next.lat, next.lng);
 
-        const stepLat = (dx / distance) * 0.0001;
+        const stepLat = (dx / distance) * 0.0001; // Movimento incrementale
         const stepLng = (dy / distance) * 0.0001;
 
         current.lat += stepLat;
@@ -72,81 +86,28 @@ function simulateDroneFlight() {
 
         droneMarker.setLatLng([current.lat, current.lng]);
 
+        document.getElementById('realTimeData').textContent = `Velocità Attuale: ${(10 + windSpeed).toFixed(2)} m/s | Distanza dal Prossimo Punto: ${distance.toFixed(2)} m`;
+
         if (distance < 1) index++;
     }, 100);
 }
 
-// Esporta la rotta in formato JSON
-function exportRoute() {
-    if (dronePath.length === 0) {
-        alert("Errore: Nessuna rotta da esportare.");
-        return;
-    }
-
-    const routeData = {
-        waypoints: dronePath,
-        windSpeed,
-        windDirection,
-    };
-
-    const blob = new Blob([JSON.stringify(routeData, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "drone_route.json";
-    link.click();
-
-    URL.revokeObjectURL(url);
-}
-
-// Importa una rotta da un file JSON
-function importRoute(event) {
-    const file = event.target.files[0];
-    if (!file) {
-        alert("Errore: Nessun file selezionato.");
-        return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = function (e) {
-        try {
-            const data = JSON.parse(e.target.result);
-            resetSimulation();
-            data.waypoints.forEach(point => {
-                const marker = L.marker([point.lat, point.lng]).addTo(map);
-                waypointMarkers.push(marker);
-                dronePath.push(point);
-                marker.bindPopup(`Latitudine: ${point.lat.toFixed(5)}, Longitudine: ${point.lng.toFixed(5)}`).openPopup();
-            });
-
-            windSpeed = data.windSpeed || 0;
-            windDirection = data.windDirection || 0;
-
-            document.getElementById('windSpeed').value = windSpeed;
-            document.getElementById('windDirection').value = windDirection;
-
-            alert("Rotta importata con successo!");
-        } catch (error) {
-            alert("Errore: File JSON non valido.");
-        }
-    };
-
-    reader.readAsText(file);
-}
-
-// Resetta la simulazione
+// Reset della simulazione
 function resetSimulation() {
     dronePath = [];
     waypointMarkers.forEach(marker => map.removeLayer(marker));
     waypointMarkers = [];
     if (droneMarker) map.removeLayer(droneMarker);
+    document.getElementById('dataRows').innerHTML = '';
+    document.getElementById('realTimeData').textContent = '';
 }
 
 // Eventi
-document.getElementById('startButton').addEventListener('click', simulateDroneFlight);
-document.getElementById('resetButton').addEventListener('click', resetSimulation);
-document.getElementById('exportRoute').addEventListener('click', exportRoute);
-document.getElementById('importFile').addEventListener('change', importRoute);
+document.getElementById('startButton').addEventListener('click', () => {
+    windSpeed = parseFloat(document.getElementById('windSpeed').value);
+    windDirection = parseFloat(document.getElementById('windDirection').value);
+    simulateDroneFlight();
+});
 
+document.getElementById('resetButton').addEventListener('click', resetSimulation);
 document.addEventListener('DOMContentLoaded', initializeMap);
