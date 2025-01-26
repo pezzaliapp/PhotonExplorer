@@ -27,22 +27,24 @@ h1 {
     flex-wrap: wrap;
     gap: 10px;
     background-color: #f4f4f4;
-    border-top: 1px solid #ccc;
 }
 
-button, input[type="file"], label {
-    padding: 5px 10px;
-    font-size: 14px;
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
 }
 
-button {
-    background-color: #007BFF;
-    color: white;
-    border: none;
-    border-radius: 3px;
-    cursor: pointer;
+table, th, td {
+    border: 1px solid #ccc;
 }
 
-button:hover {
-    background-color: #0056b3;
+th, td {
+    padding: 10px;
+    text-align: center;
+}
+
+#realTimeData {
+    margin-top: 10px;
+    font-weight: bold;
 }
