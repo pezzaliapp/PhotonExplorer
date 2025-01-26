@@ -1,12 +1,12 @@
 const cacheName = "photonExplorerCache-v1";
 const assets = [
-  "/",
-  "/index.html",
-  "/style.css",
-  "/app.js",
-  "/manifest.json",
-  "/icons/icon-192x192.png",
-  "/icons/icon-512x512.png",
+  "./",
+  "./index.html",
+  "./style.css",
+  "./app.js",
+  "./manifest.json",
+  "./icons/icon-192x192.png",
+  "./icons/icon-512x512.png",
   "https://unpkg.com/leaflet@1.9.3/dist/leaflet.css",
   "https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"
 ];
