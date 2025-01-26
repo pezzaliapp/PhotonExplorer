@@ -10,7 +10,7 @@ function initializeMap() {
     map = L.map('map', {
         crs: L.CRS.EPSG3857,
         zoomControl: true,
-    }).setView([45.4642, 9.1900], 13);
+    }).setView([45.4642, 9.1900], 13); // Milano come posizione predefinita
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
@@ -104,7 +104,7 @@ function simulateDroneFlight() {
     }, 100);
 }
 
-// Reset della simulazione
+// Resetta la simulazione
 function resetSimulation() {
     dronePath = [];
     waypointMarkers.forEach(marker => map.removeLayer(marker));
@@ -113,10 +113,6 @@ function resetSimulation() {
     document.getElementById('dataRows').innerHTML = '';
     document.getElementById('realTimeData').textContent = '';
 }
-
-// Esportazione e importazione della rotta
-function exportRoute() { /* ... */ }
-function importRoute(event) { /* ... */ }
 
 // Eventi
 document.getElementById('startButton').addEventListener('click', simulateDroneFlight);
