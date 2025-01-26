@@ -15,12 +15,20 @@
         <button id="droneMode">Pianificazione Drone</button>
     </div>
     <div id="simulationArea">
-        <canvas id="photonCanvas" width="600" height="400" style="display: none;"></canvas>
-        <canvas id="droneCanvas" width="600" height="400" style="display: none;"></canvas>
+        <canvas id="photonCanvas" width="800" height="500" style="display: none;"></canvas>
+        <canvas id="droneCanvas" width="800" height="500" style="display: none;"></canvas>
     </div>
-    <div class="controls">
-        <button id="startButton" style="display: none;">Avvia Simulazione</button>
-        <button id="resetButton" style="display: none;">Reset</button>
+    <div class="controls" id="controlPanel" style="display: none;">
+        <div id="droneControls" style="display: none;">
+            <label for="coordinates">Inserisci coordinate (es: 100,100 300,200 500,100):</label>
+            <input type="text" id="coordinates" placeholder="Es: 100,100 300,200 500,100">
+            <label for="speed">Velocità del drone (px/s):</label>
+            <input type="number" id="speed" min="1" max="20" value="10">
+            <label for="windSpeed">Velocità del vento (px/s):</label>
+            <input type="number" id="windSpeed" min="0" max="10" value="2">
+        </div>
+        <button id="startButton">Avvia Simulazione</button>
+        <button id="resetButton">Reset</button>
     </div>
 </body>
 </html>
