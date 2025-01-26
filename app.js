@@ -7,7 +7,7 @@ let windDirection = 0;
 
 // Inizializza la mappa
 function initializeMap() {
-    map = L.map('map').setView([45.4642, 9.1900], 13); // Milano come posizione predefinita
+    map = L.map('map').setView([45.4642, 9.1900], 13);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
@@ -16,16 +16,18 @@ function initializeMap() {
 
     map.on('click', function (e) {
         const { lat, lng } = e.latlng;
+
         const marker = L.marker([lat, lng]).addTo(map);
         waypointMarkers.push(marker);
         dronePath.push({ lat, lng });
+
         marker.bindPopup(`Latitudine: ${lat.toFixed(5)}, Longitudine: ${lng.toFixed(5)}`).openPopup();
     });
 }
 
-// Calcola distanza tra due punti (in metri)
+// Calcola la distanza tra due punti
 function calculateDistance(lat1, lng1, lat2, lng2) {
-    const R = 6371000; // Raggio terrestre in metri
+    const R = 6371000;
     const dLat = (lat2 - lat1) * (Math.PI / 180);
     const dLng = (lng2 - lng1) * (Math.PI / 180);
     const a =
@@ -53,7 +55,7 @@ function simulateDroneFlight() {
         if (i < dronePath.length - 1) {
             const nextPoint = dronePath[i + 1];
             const distance = calculateDistance(point.lat, point.lng, nextPoint.lat, nextPoint.lng);
-            const time = (distance / (10 + windSpeed)).toFixed(2); // Velocità media 10 m/s più effetto del vento
+            const time = (distance / (10 + windSpeed)).toFixed(2);
             const row = `<tr>
                 <td>${i + 1}</td>
                 <td>${point.lat.toFixed(5)}</td>
@@ -78,7 +80,7 @@ function simulateDroneFlight() {
         const dy = next.lng - current.lng;
         const distance = calculateDistance(current.lat, current.lng, next.lat, next.lng);
 
-        const stepLat = (dx / distance) * 0.0001; // Movimento incrementale
+        const stepLat = (dx / distance) * 0.0001;
         const stepLng = (dy / distance) * 0.0001;
 
         current.lat += stepLat;
@@ -101,6 +103,10 @@ function resetSimulation() {
     document.getElementById('dataRows').innerHTML = '';
     document.getElementById('realTimeData').textContent = '';
 }
+
+// Export/Import
+function exportRoute() { /* Logica per esportare */ }
+function importRoute(event) { /* Logica per importare */ }
 
 // Eventi
 document.getElementById('startButton').addEventListener('click', () => {
