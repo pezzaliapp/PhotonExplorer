@@ -25,7 +25,7 @@ function initializeMap() {
     });
 }
 
-// Calcola la distanza tra due punti (in metri)
+// Calcola la distanza tra due punti in metri
 function calculateDistance(lat1, lng1, lat2, lng2) {
     const R = 6371000; // Raggio terrestre in metri
     const dLat = (lat2 - lat1) * (Math.PI / 180);
@@ -35,30 +35,6 @@ function calculateDistance(lat1, lng1, lat2, lng2) {
         Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c;
-}
-
-// Aggiorna i dati della tabella e in tempo reale
-function updateRealTimeData(index, distance) {
-    const currentSpeed = (10 + windSpeed).toFixed(2); // Velocità base + vento
-    document.getElementById('realTimeData').textContent = `Velocità Attuale: ${currentSpeed} m/s | Distanza dal Prossimo Punto: ${distance.toFixed(2)} m`;
-
-    const dataRows = document.getElementById('dataRows');
-    const rowExists = dataRows.querySelector(`tr[data-index="${index}"]`);
-    if (!rowExists) {
-        const current = dronePath[index];
-        const next = dronePath[index + 1];
-        const time = (distance / currentSpeed).toFixed(2);
-
-        const row = `
-            <tr data-index="${index}">
-                <td>${index + 1}</td>
-                <td>${current.lat.toFixed(5)}</td>
-                <td>${current.lng.toFixed(5)}</td>
-                <td>${time}</td>
-                <td>${distance.toFixed(2)}</td>
-            </tr>`;
-        dataRows.insertAdjacentHTML('beforeend', row);
-    }
 }
 
 // Simula il volo del drone
@@ -96,23 +72,81 @@ function simulateDroneFlight() {
 
         droneMarker.setLatLng([current.lat, current.lng]);
 
-        updateRealTimeData(index, distance);
-
         if (distance < 1) index++;
     }, 100);
 }
 
-// Reset della simulazione
+// Esporta la rotta in formato JSON
+function exportRoute() {
+    if (dronePath.length === 0) {
+        alert("Errore: Nessuna rotta da esportare.");
+        return;
+    }
+
+    const routeData = {
+        waypoints: dronePath,
+        windSpeed,
+        windDirection,
+    };
+
+    const blob = new Blob([JSON.stringify(routeData, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "drone_route.json";
+    link.click();
+
+    URL.revokeObjectURL(url);
+}
+
+// Importa una rotta da un file JSON
+function importRoute(event) {
+    const file = event.target.files[0];
+    if (!file) {
+        alert("Errore: Nessun file selezionato.");
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        try {
+            const data = JSON.parse(e.target.result);
+            resetSimulation();
+            data.waypoints.forEach(point => {
+                const marker = L.marker([point.lat, point.lng]).addTo(map);
+                waypointMarkers.push(marker);
+                dronePath.push(point);
+                marker.bindPopup(`Latitudine: ${point.lat.toFixed(5)}, Longitudine: ${point.lng.toFixed(5)}`).openPopup();
+            });
+
+            windSpeed = data.windSpeed || 0;
+            windDirection = data.windDirection || 0;
+
+            document.getElementById('windSpeed').value = windSpeed;
+            document.getElementById('windDirection').value = windDirection;
+
+            alert("Rotta importata con successo!");
+        } catch (error) {
+            alert("Errore: File JSON non valido.");
+        }
+    };
+
+    reader.readAsText(file);
+}
+
+// Resetta la simulazione
 function resetSimulation() {
     dronePath = [];
     waypointMarkers.forEach(marker => map.removeLayer(marker));
     waypointMarkers = [];
     if (droneMarker) map.removeLayer(droneMarker);
-    document.getElementById('dataRows').innerHTML = '';
-    document.getElementById('realTimeData').textContent = '';
 }
 
 // Eventi
 document.getElementById('startButton').addEventListener('click', simulateDroneFlight);
 document.getElementById('resetButton').addEventListener('click', resetSimulation);
+document.getElementById('exportRoute').addEventListener('click', exportRoute);
+document.getElementById('importFile').addEventListener('change', importRoute);
+
 document.addEventListener('DOMContentLoaded', initializeMap);
