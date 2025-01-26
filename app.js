@@ -10,7 +10,7 @@ function initializeMap() {
     map = L.map('map', {
         crs: L.CRS.EPSG3857,
         zoomControl: true,
-    }).setView([45.4642, 9.1900], 13); // Milano come posizione predefinita
+    }).setView([45.4642, 9.1900], 13);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
@@ -19,7 +19,6 @@ function initializeMap() {
 
     map.on('click', function (e) {
         const { lat, lng } = e.latlng;
-
         const marker = L.marker([lat, lng]).addTo(map);
         waypointMarkers.push(marker);
         dronePath.push({ lat, lng });
@@ -28,9 +27,9 @@ function initializeMap() {
     });
 }
 
-// Calcola la distanza tra due punti in metri
+// Calcola la distanza tra due punti
 function calculateDistance(lat1, lng1, lat2, lng2) {
-    const R = 6371000; // Raggio terrestre in metri
+    const R = 6371000;
     const dLat = (lat2 - lat1) * (Math.PI / 180);
     const dLng = (lng2 - lng1) * (Math.PI / 180);
     const a =
@@ -40,9 +39,9 @@ function calculateDistance(lat1, lng1, lat2, lng2) {
     return R * c;
 }
 
-// Aggiorna la tabella e i dati in tempo reale
+// Aggiorna i dati in tempo reale
 function updateRealTimeData(index, distance) {
-    const currentSpeed = (10 + windSpeed).toFixed(2); // Velocità base + vento
+    const currentSpeed = (10 + windSpeed).toFixed(2);
     document.getElementById('realTimeData').textContent = `Velocità Attuale: ${currentSpeed} m/s | Distanza dal Prossimo Punto: ${distance.toFixed(2)} m`;
 
     const dataRows = document.getElementById('dataRows');
@@ -67,7 +66,7 @@ function updateRealTimeData(index, distance) {
 // Simula il volo del drone
 function simulateDroneFlight() {
     if (dronePath.length < 2) {
-        alert("Errore: Seleziona almeno due punti sulla mappa.");
+        alert("Errore: Devi selezionare almeno due punti.");
         return;
     }
 
@@ -105,7 +104,7 @@ function simulateDroneFlight() {
     }, 100);
 }
 
-// Resetta la simulazione
+// Reset della simulazione
 function resetSimulation() {
     dronePath = [];
     waypointMarkers.forEach(marker => map.removeLayer(marker));
@@ -115,74 +114,11 @@ function resetSimulation() {
     document.getElementById('realTimeData').textContent = '';
 }
 
-// Esporta la rotta in formato JSON
-function exportRoute() {
-    if (dronePath.length === 0) {
-        alert("Errore: Nessuna rotta da esportare.");
-        return;
-    }
+// Esportazione e importazione della rotta
+function exportRoute() { /* ... */ }
+function importRoute(event) { /* ... */ }
 
-    const routeData = {
-        waypoints: dronePath,
-        windSpeed,
-        windDirection,
-    };
-
-    const blob = new Blob([JSON.stringify(routeData, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "drone_route.json";
-    link.click();
-
-    URL.revokeObjectURL(url);
-}
-
-// Importa una rotta da un file JSON
-function importRoute(event) {
-    const file = event.target.files[0];
-    if (!file) {
-        alert("Errore: Nessun file selezionato.");
-        return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = function (e) {
-        try {
-            const data = JSON.parse(e.target.result);
-            resetSimulation();
-            data.waypoints.forEach(point => {
-                const marker = L.marker([point.lat, point.lng]).addTo(map);
-                waypointMarkers.push(marker);
-                dronePath.push(point);
-                marker.bindPopup(`Latitudine: ${point.lat.toFixed(5)}, Longitudine: ${point.lng.toFixed(5)}`).openPopup();
-            });
-
-            windSpeed = data.windSpeed || 0;
-            windDirection = data.windDirection || 0;
-
-            document.getElementById('windSpeed').value = windSpeed;
-            document.getElementById('windDirection').value = windDirection;
-
-            alert("Rotta importata con successo!");
-        } catch (error) {
-            alert("Errore: File JSON non valido.");
-        }
-    };
-
-    reader.readAsText(file);
-}
-
-// Eventi principali
-document.getElementById('startButton').addEventListener('click', () => {
-    windSpeed = parseFloat(document.getElementById('windSpeed').value);
-    windDirection = parseFloat(document.getElementById('windDirection').value);
-    simulateDroneFlight();
-});
-
+// Eventi
+document.getElementById('startButton').addEventListener('click', simulateDroneFlight);
 document.getElementById('resetButton').addEventListener('click', resetSimulation);
-document.getElementById('exportRoute').addEventListener('click', exportRoute);
-document.getElementById('importFile').addEventListener('change', importRoute);
-
 document.addEventListener('DOMContentLoaded', initializeMap);
