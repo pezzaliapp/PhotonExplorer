@@ -24,17 +24,14 @@ h1 {
 .controls {
     padding: 10px;
     display: flex;
-    flex-wrap: wrap;
     gap: 10px;
     background-color: #f4f4f4;
-    border-top: 1px solid #ccc;
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 10px;
-    background-color: #fff;
 }
 
 table, th, td {
