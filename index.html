@@ -12,22 +12,8 @@
 </head>
 <body>
     <h1>PhotonExplorer: Pianificazione del Volo del Drone</h1>
-    <div class="mode-selection">
-        <button id="photonMode">Simulazione Fotoni</button>
-        <button id="droneMode">Pianificazione Drone</button>
-    </div>
-    <div id="simulationArea">
-        <div id="map" style="width: 800px; height: 500px; display: none;"></div>
-    </div>
-    <div class="controls" id="controlPanel" style="display: none;">
-        <div id="droneControls" style="display: none;">
-            <label for="waypoints">Inserisci waypoint (latitudine, longitudine, altitudine):</label>
-            <textarea id="waypoints" placeholder="Esempio:\n45.4642,9.1900,100\n45.4635,9.1925,120"></textarea>
-            <label for="speed">Velocità del drone (m/s):</label>
-            <input type="number" id="speed" min="1" max="20" value="10">
-            <label for="windSpeed">Velocità del vento (m/s):</label>
-            <input type="number" id="windSpeed" min="0" max="10" value="2">
-        </div>
+    <div id="map" style="width: 100vw; height: 90vh;"></div>
+    <div class="controls">
         <button id="startButton">Avvia Simulazione</button>
         <button id="resetButton">Reset</button>
     </div>
