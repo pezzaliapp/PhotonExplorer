@@ -37,6 +37,13 @@ button:hover {
     background-color: #0056b3;
 }
 
+input {
+    margin: 5px;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
 .mode-selection {
     margin-bottom: 20px;
 }
