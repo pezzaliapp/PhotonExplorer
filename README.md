@@ -7,11 +7,19 @@
 ## Funzionalità
 
 ### 1. **Simulazione dei Fotoni**
+- Rappresentazione visiva del comportamento dei fotoni con effetti più realistici.
+- Simulazione arricchita con onde luminose, rifrazioni e particelle per un'esperienza più immersiva.
+- Calcolo e visualizzazione dei tempi di volo (ToF) per ogni fotone.
 - Rappresentazione visiva del comportamento dei fotoni.
 - Simulazione del movimento e del rimbalzo dei fotoni su superfici.
 - Calcolo e visualizzazione dei tempi di volo (ToF) per ogni fotone.
 
 ### 2. **Pianificazione della Traiettoria dei Droni**
+- Aggiunta la possibilità di inserire coordinate personalizzabili per creare rotte specifiche.
+- Simulazione visiva del viaggio del drone lungo il percorso impostato.
+- Opzioni per configurare la velocità del drone e la velocità del vento, con influenze dinamiche sulla traiettoria.
+- Introduzione di ostacoli dinamici che il drone deve evitare durante la simulazione.
+- Animazione fluida del drone che segue la rotta impostata, con aggiornamenti in tempo reale.
 - Simulazione della traiettoria ottimale per un drone in un ambiente virtuale.
 - Generazione di percorsi rettilinei e animazione del volo.
 - Utilizzo di modelli 2D per rappresentare il movimento del drone.
@@ -69,7 +77,7 @@ PhotonExplorer/
    - **Pianificazione Drone:** Simula il movimento del drone e pianifica percorsi.
 
 2. **Avvia la simulazione:**
-   Premi il pulsante "Avvia Simulazione" per vedere i fotoni o il drone in azione.
+   Premi il pulsante "Avvia Simulazione" per vedere i fotoni o il drone in azione. Puoi configurare variabili come la velocità del drone, la velocità del vento e aggiungere ostacoli per arricchire l'esperienza simulativa.
 
 3. **Resetta:**
    Utilizza il pulsante "Reset" per ripristinare lo stato iniziale.
@@ -105,6 +113,6 @@ PhotonExplorer è distribuito sotto la licenza MIT. Consulta il file `LICENSE` p
 ## Contatti
 
 Per domande o suggerimenti, contattaci:
-- **Email:** support@photonexplorer.com
-- **Sito Web:** [www.photonexplorer.com](http://www.photonexplorer.com)
+- **Email:** pezzalialessandro@gmail.com
+- **Sito Web:** [www.pezzaliapp.com](http://www.pezzaliapp.com)
 
