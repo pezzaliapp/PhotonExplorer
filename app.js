@@ -1,73 +1,38 @@
-let map;
-let droneMarker;
-let waypointMarkers = [];
-let dronePath = [];
-let windSpeed = 0;
-let windDirection = 0;
-let isSimulating = false;
+// Aggiorna i dati della tabella e in tempo reale
+function updateRealTimeData(index, distance) {
+    const currentSpeed = (10 + windSpeed).toFixed(2); // Velocità base + effetto vento
+    document.getElementById('realTimeData').textContent = `Velocità Attuale: ${currentSpeed} m/s | Distanza dal Prossimo Punto: ${distance.toFixed(2)} m`;
 
-// Inizializza la mappa
-function initializeMap() {
-    map = L.map('map', {
-        crs: L.CRS.EPSG3857,
-        zoomControl: true,
-    }).setView([45.4642, 9.1900], 13); // Milano come posizione predefinita
+    // Aggiungi riga alla tabella se non presente
+    const dataRows = document.getElementById('dataRows');
+    const rowExists = dataRows.querySelector(`tr[data-index="${index}"]`);
+    if (!rowExists) {
+        const current = dronePath[index];
+        const next = dronePath[index + 1];
+        const time = (distance / currentSpeed).toFixed(2);
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '&copy; OpenStreetMap contributors',
-    }).addTo(map);
-
-    map.on('click', function (e) {
-        const { lat, lng } = e.latlng;
-        const marker = L.marker([lat, lng]).addTo(map);
-        waypointMarkers.push(marker);
-        dronePath.push({ lat, lng });
-        marker.bindPopup(`Latitudine: ${lat.toFixed(5)}, Longitudine: ${lng.toFixed(5)}`).openPopup();
-    });
-}
-
-// Calcola distanza tra due punti (in metri)
-function calculateDistance(lat1, lng1, lat2, lng2) {
-    const R = 6371000; // Raggio terrestre in metri
-    const dLat = (lat2 - lat1) * (Math.PI / 180);
-    const dLng = (lng2 - lng1) * (Math.PI / 180);
-    const a =
-        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
+        const row = `
+            <tr data-index="${index}">
+                <td>${index + 1}</td>
+                <td>${current.lat.toFixed(5)}</td>
+                <td>${current.lng.toFixed(5)}</td>
+                <td>${time}</td>
+                <td>${distance.toFixed(2)}</td>
+            </tr>`;
+        dataRows.insertAdjacentHTML('beforeend', row);
+    }
 }
 
 // Simula il volo del drone
 function simulateDroneFlight() {
     if (dronePath.length < 2) {
-        alert("Errore: Seleziona almeno due punti.");
+        alert("Errore: Devi selezionare almeno due punti sulla mappa.");
         return;
     }
 
     let index = 0;
     const droneIcon = L.icon({ iconUrl: 'icons/icon-drone.png', iconSize: [30, 30] });
     droneMarker = L.marker([dronePath[0].lat, dronePath[0].lng], { icon: droneIcon }).addTo(map);
-
-    const dataRows = document.getElementById('dataRows');
-    dataRows.innerHTML = '';
-
-    dronePath.forEach((point, i) => {
-        if (i < dronePath.length - 1) {
-            const nextPoint = dronePath[i + 1];
-            const distance = calculateDistance(point.lat, point.lng, nextPoint.lat, nextPoint.lng);
-            const time = (distance / (10 + windSpeed)).toFixed(2); // Velocità media 10 m/s più effetto del vento
-            const row = `<tr>
-                <td>${i + 1}</td>
-                <td>${point.lat.toFixed(5)}</td>
-                <td>${point.lng.toFixed(5)}</td>
-                <td>${time}</td>
-                <td>${distance.toFixed(2)}</td>
-            </tr>`;
-            dataRows.insertAdjacentHTML('beforeend', row);
-        }
-    });
 
     const interval = setInterval(() => {
         if (index >= dronePath.length - 1) {
@@ -90,26 +55,23 @@ function simulateDroneFlight() {
 
         droneMarker.setLatLng([current.lat, current.lng]);
 
-        document.getElementById('realTimeData').textContent = `Velocità Attuale: ${(10 + windSpeed).toFixed(2)} m/s | Distanza dal Prossimo Punto: ${distance.toFixed(2)} m`;
+        updateRealTimeData(index, distance);
 
         if (distance < 1) index++;
     }, 100);
 }
 
-// Eventi
-document.getElementById('startButton').addEventListener('click', () => {
-    windSpeed = parseFloat(document.getElementById('windSpeed').value);
-    windDirection = parseFloat(document.getElementById('windDirection').value);
-    simulateDroneFlight();
-});
+// Funzione per calcolare la distanza tra due punti
+function calculateDistance(lat1, lng1, lat2, lng2) {
+    const R = 6371000; // Raggio terrestre in metri
+    const dLat = (lat2 - lat1) * (Math.PI / 180);
+    const dLng = (lng2 - lng1) * (Math.PI / 180);
+    const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+}
 
-document.getElementById('resetButton').addEventListener('click', () => {
-    dronePath = [];
-    waypointMarkers.forEach(marker => map.removeLayer(marker));
-    waypointMarkers = [];
-    if (droneMarker) map.removeLayer(droneMarker);
-    document.getElementById('dataRows').innerHTML = '';
-    document.getElementById('realTimeData').textContent = '';
-});
-
+// Inizializza la mappa quando la pagina è pronta
 document.addEventListener('DOMContentLoaded', initializeMap);
